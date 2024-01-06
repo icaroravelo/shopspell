@@ -71,31 +71,65 @@ with sync_playwright() as p:
             elif 'continente.pt' in page.url:
                 # Your scraping logic for Continente
 
-                # Accept cookies button
-                page.locator('xpath=//*[@id="CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll"]').click()
+                # Accept cookies if necessary
+                try:
+                    page.wait_for_selector(
+                        "xpath=//*[@id='CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll']",
+                        timeout=10000
+                    ).click()
+                except:
+                    pass
 
-                # Locate, click and fill the search text input
-                page.locator('xpath=//*[@id="input-custom-label-search"]').click()
-                page.fill('xpath=//*[@id="input-custom-label-search"]', "arroz")
-                page.locator('xpath=//*[@id="brand-header"]/nav/div/div[1]/div[1]/div[3]/form/div/div[1]/button[1]').click()
+                # Fill the search text input and press Enter
+                search_input = page.wait_for_selector(
+                    "xpath=//*[@id='input-custom-label-search']",
+                    timeout=5000
+                )
+                search_input.click()
+                search_input.fill("arroz")
+                search_input.press("Enter")
 
-                # Click on the "Ver mais Produtos" button
-                while page.locator('xpath=//*[@id="product-search-results"]/div/div[2]/div[3]/div[49]/div[3]/button').is_visible():
-                    page.locator('xpath=//*[@id="product-search-results"]/div/div[2]/div[3]/div[49]/div[3]/button').click()
+                time.sleep(2)
 
-                # Get infos from the caroussel/cards itens
+                # Wait for the product links to load
+                page.wait_for_selector(
+                    "xpath=//*[@id='product-search-results']/div/div[2]/div[3]",
+                    timeout=10000
+                )
+
+                # Click in "Ver mais produtos" while it is visible
+                while page.locator('xpath=//*[@id="product-search-results"]/div/div[2]/div[3]/div[25]/div[3]/button').is_visible():
+                    page.locator('xpath=//*[@id="product-search-results"]/div/div[2]/div[3]/div[25]/div[3]/button').click()
+                
+
+                # Get product links
                 product_links = page.evaluate('''() => {
-                    const cards = Array.from(document.querySelectorAll('.row .product-grid a.intrinsic intrinsic--square'));
+                    const cards = Array.from(document.querySelectorAll('.ct-image-container a'));
                     return cards.map(card => card.getAttribute('href'));
                 }''')
 
-                product_info = page.evaluate('''() => {
-                    const title = document.querySelector('.product-name').innerText.trim();                        
-                    const price = document.querySelector('.prices-wrapper').innerText.trim();  
-
-                    return { title, price };                      
-                }''')
                 time.sleep(2)
+
+                # Create a variable to store the search results
+                products_data = []
+
+                # Iterate through each product link
+                for link in product_links:
+                    page.goto(link)
+
+                    # Wait for the product details to load
+                    page.locator(".row.no-gutter.ct-pdp--name")
+                    price = page.wait_for_selector(".prices-wrapper")
+
+                    # Get the name and price of the product
+                    product_info = page.evaluate('''() => {
+                        const title = document.querySelector('.pwc-h3.col-h3.product-name.pwc-font--primary-extrabold.mb-0').innerText.trim();
+                        const price = document.querySelector('.prices-wrapper').innerText.trim();
+                        return { title, price };
+                    }''')
+
+                    # Append the product info to the list
+                    products_data.append(product_info)
 
             # elif 'aldi.pt' in page.url:
             #     # Your scraping logic for Aldi
