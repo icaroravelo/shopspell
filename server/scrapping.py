@@ -76,7 +76,7 @@ with sync_playwright() as p:
 
                 # Locate, click and fill the search text input
                 page.locator('xpath=//*[@id="input-custom-label-search"]').click()
-                page.fill('xpath=//*[@id="input-custom-label-search"]', product)
+                page.fill('xpath=//*[@id="input-custom-label-search"]', "arroz")
                 page.locator('xpath=//*[@id="brand-header"]/nav/div/div[1]/div[1]/div[3]/form/div/div[1]/button[1]').click()
 
                 # Click on the "Ver mais Produtos" button
