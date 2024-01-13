@@ -3,11 +3,11 @@ from continente import scrape_continente
 from openpyxl import Workbook
 
 # List of products for Pingo Doce
-with open('produtos.txt', 'r') as file:
+with open('shop_list.txt', 'r') as file:
     productsPingoDoce = [product.strip() for product in file.readlines()]
 
 # List of products for Continente
-with open('produtos.txt', 'r') as file:
+with open('shop_list.txt', 'r') as file:
     productsContinente = [product.strip() for product in file.readlines()]
 
 wb = Workbook()
